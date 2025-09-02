@@ -37,7 +37,7 @@ h1,h2{text-align:center;color:#23d5ab;margin-bottom:30px;}
 </div>
 
 <script>
-const cfg={BASE:"https://api.themoviedb.org/3/",KEY:"YOUR_TMDB_API_KEY",IMG:"https://image.tmdb.org/t/p/w500"};
+const cfg={BASE:"https://api.themoviedb.org/3/",KEY:"fed86956458f19fb45cdd382b6e6de83",IMG:"https://image.tmdb.org/t/p/w500"};
 
 async function fetchLatestIndianMovies(){
   const res = await fetch(`${cfg.BASE}discover/movie?api_key=${cfg.KEY}&with_original_language=hi&sort_by=release_date.desc&language=en-US`);

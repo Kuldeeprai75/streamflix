@@ -3,33 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Streaming Player</title>
+<title>Movie Detail</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
 <style>
-body{background:#0e0f14;color:#fff;font-family:Arial,sans-serif;}
-.container{max-width:1000px;}
-.trailer-container{position:relative;width:100%;padding-top:56.25%;margin-bottom:20px;}
+body{background:#0e0f14;color:#fff;font-family:sans-serif;margin:0;padding:0;}
+.container{max-width:900px;margin:auto;padding:20px;}
+.trailer-container{position:relative;width:100%;padding-top:56.25%;margin-bottom:15px;}
 .trailer-container iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:12px;}
 .play-btn-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(35,213,171,0.9);padding:15px 25px;border-radius:50px;font-weight:bold;cursor:pointer;font-size:18px;}
 .movie-info{display:flex;flex-wrap:wrap;margin-bottom:20px;}
-.movie-poster{width:250px;margin-right:20px;border-radius:12px;}
+.poster{width:200px;margin-right:20px;border-radius:12px;}
 .info-right{flex:1;}
 .info-right h2{color:#23d5ab;margin-bottom:10px;}
 .info-right p{margin:5px 0;}
-.actors{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
-.actor-card{text-align:center;width:100px;}
+.actors{display:flex;gap:10px;overflow-x:auto;margin-top:10px;}
+.actor-card{text-align:center;width:100px;flex:0 0 auto;}
 .actor-card img{width:100%;border-radius:50%;}
 #videoPlayerContainer{display:none;width:100%;aspect-ratio:16/9;margin-bottom:20px;}
 #videoPlayer{width:100%;height:100%;border:none;border-radius:12px;}
 .download-btn{background:#23d5ab;border:none;padding:10px 20px;border-radius:6px;font-weight:bold;cursor:pointer;margin-top:10px;}
-.controls{margin-bottom:20px;}
 label{margin-right:10px;}
 select{background:#151823;color:#fff;border:none;padding:5px 10px;border-radius:6px;}
 </style>
 </head>
 <body>
 
-<div class="container py-4">
+<div class="container">
   <div class="trailer-container" id="trailerContainer">
     <iframe id="trailerIframe" allowfullscreen></iframe>
     <div class="play-btn-overlay" id="playMovieBtn">▶ Play</div>
@@ -40,132 +39,66 @@ select{background:#151823;color:#fff;border:none;padding:5px 10px;border-radius:
   </div>
 
   <div class="movie-info">
-    <img src="" id="moviePoster" class="movie-poster">
+    <img src="" id="moviePoster" class="poster">
     <div class="info-right">
       <h2 id="movieTitle"></h2>
       <p><strong>Release Date:</strong> <span id="movieRelease"></span></p>
       <p><strong>Duration:</strong> <span id="movieDuration"></span> min</p>
       <p><strong>Rating:</strong> <span id="movieRating"></span></p>
       <p><strong>Genres:</strong> <span id="movieGenres"></span></p>
-
-      <div class="controls" id="tvControls" style="display:none;">
-        <label>Season:</label>
-        <select id="seasonSelect"></select>
-        <label>Episode:</label>
-        <select id="episodeSelect"></select>
-      </div>
+      <p><strong>Language:</strong> <span id="movieLanguage">Hindi</span></p>
 
       <div class="actors" id="actorsContainer"></div>
+      <button class="download-btn" id="downloadBtn">⬇ Download</button>
     </div>
   </div>
-
-  <button class="download-btn" id="downloadBtn">⬇ Download</button>
 </div>
 
 <script>
-const cfg={BASE:"https://api.themoviedb.org/3/",KEY:"YOUR_TMDB_API_KEY",IMG:"https://image.tmdb.org/t/p/w500"};
+const cfg={BASE:"https://api.themoviedb.org/3/",KEY:"fed86956458f19fb45cdd382b6e6de83",IMG:"https://image.tmdb.org/t/p/w500"};
 
-function getQueryParam(param){
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(param);
-}
+function getQueryParam(param){return new URLSearchParams(window.location.search).get(param);}
 
 async function loadMovieOrTV(){
-  const id = getQueryParam("id");
-  const type = getQueryParam("type")||"movie"; // movie or tv
+  const id = getQueryParam("id"); const type = getQueryParam("type")||"movie";
   if(!id) return;
-
-  // Fetch basic info
   const dataRes = await fetch(`${cfg.BASE}${type}/${id}?api_key=${cfg.KEY}&language=en-US`);
   const data = await dataRes.json();
 
-  // Poster and info
-  document.getElementById("moviePoster").src = data.poster_path? cfg.IMG+data.poster_path : "";
+  document.getElementById("moviePoster").src = data.poster_path? cfg.IMG+data.poster_path:'';
   document.getElementById("movieTitle").textContent = data.title || data.name;
-  document.getElementById("movieRelease").textContent = data.release_date || data.first_air_date || "";
-  document.getElementById("movieDuration").textContent = type==="movie"? data.runtime : data.episode_run_time[0] || "-";
-  document.getElementById("movieRating").textContent = data.vote_average;
+  document.getElementById("movieRelease").textContent = data.release_date || data.first_air_date || '';
+  document.getElementById("movieDuration").textContent = type==='movie'? data.runtime : data.episode_run_time[0]||'-';
+  document.getElementById("movieRating").textContent = data.vote_average.toFixed(1);
   document.getElementById("movieGenres").textContent = (data.genres||[]).map(g=>g.name).join(", ");
 
-  // Actors
   const creditsRes = await fetch(`${cfg.BASE}${type}/${id}/credits?api_key=${cfg.KEY}`);
   const credits = await creditsRes.json();
   const actorsContainer = document.getElementById("actorsContainer");
   actorsContainer.innerHTML="";
-  (credits.cast||[]).slice(0,5).forEach(actor=>{
+  (credits.cast||[]).slice(0,8).forEach(actor=>{
     const div = document.createElement("div");
     div.className="actor-card";
-    div.innerHTML=`<img src="${actor.profile_path?cfg.IMG+actor.profile_path:'https://via.placeholder.com/100'}" alt="${actor.name}">
-      <div>${actor.name}</div>`;
+    div.innerHTML=`<img src="${actor.profile_path?cfg.IMG+actor.profile_path:'https://via.placeholder.com/100'}"><div>${actor.name}</div>`;
     actorsContainer.appendChild(div);
   });
 
-  // Trailer (Hindi first if exists)
   const videosRes = await fetch(`${cfg.BASE}${type}/${id}/videos?api_key=${cfg.KEY}&language=hi-IN`);
   const videosData = await videosRes.json();
-  const trailer = videosData.results.find(v=>v.type==="Trailer") || videosData.results[0];
-  if(trailer){
-    document.getElementById("trailerIframe").src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
-  }else{
-    document.getElementById("trailerContainer").style.display="none";
-  }
+  const trailer = videosData.results.find(v=>v.type==="Trailer")||videosData.results[0];
+  if(trailer){document.getElementById("trailerIframe").src=`https://www.youtube.com/embed/${trailer.key}?autoplay=1`;}
+  else{document.getElementById("trailerContainer").style.display="none";}
 
-  // TV Controls
-  if(type==="tv"){
-    document.getElementById("tvControls").style.display="block";
-    const seasonSelect = document.getElementById("seasonSelect");
-    const episodeSelect = document.getElementById("episodeSelect");
-    const seasonsRes = await fetch(`${cfg.BASE}tv/${id}?api_key=${cfg.KEY}&language=en-US`);
-    const seasonsData = await seasonsRes.json();
-    seasonSelect.innerHTML="";
-    (seasonsData.seasons||[]).forEach(s=>{
-      if(s.season_number>0){
-        const opt = document.createElement("option");
-        opt.value=s.season_number; opt.textContent=`Season ${s.season_number}`;
-        seasonSelect.appendChild(opt);
-      }
-    });
-    seasonSelect.onchange = loadEpisodes;
-    seasonSelect.value=1;
-    await loadEpisodes();
-  }
-
-  // Download button
-  document.getElementById("downloadBtn").onclick = ()=>{
-    if(type==="movie"){
-      window.open(`https://dl.vidsrc.vip/movie/${id}`,"_blank");
-    }else{
-      const season = document.getElementById("seasonSelect").value;
-      const episode = document.getElementById("episodeSelect").value;
-      window.open(`https://dl.vidsrc.vip/tv/${id}/${season}/${episode}`,"_blank");
-    }
-  }
-
-  // Play button
   document.getElementById("playMovieBtn").onclick = ()=>{
     document.getElementById("trailerContainer").style.display="none";
     document.getElementById("videoPlayerContainer").style.display="block";
-    let playerUrl;
-    if(type==="movie") playerUrl = `https://embed.su/embed/movie/${id}`;
-    else{
-      const season = document.getElementById("seasonSelect").value;
-      const episode = document.getElementById("episodeSelect").value;
-      playerUrl = `https://embed.su/embed/tv/${id}/${season}/${episode}`;
-    }
+    let playerUrl = type==='movie'? `https://embed.su/embed/movie/${id}`: `https://embed.su/embed/tv/${id}/1/1`;
     document.getElementById("videoPlayer").src = playerUrl;
   }
 
-  async function loadEpisodes(){
-    const seasonNum = document.getElementById("seasonSelect").value;
-    const epsRes = await fetch(`${cfg.BASE}tv/${id}/season/${seasonNum}?api_key=${cfg.KEY}&language=en-US`);
-    const epsData = await epsRes.json();
-    const episodeSelect = document.getElementById("episodeSelect");
-    episodeSelect.innerHTML="";
-    (epsData.episodes||[]).forEach(ep=>{
-      const opt = document.createElement("option");
-      opt.value=ep.episode_number; opt.textContent=`Episode ${ep.episode_number}`;
-      episodeSelect.appendChild(opt);
-    });
+  document.getElementById("downloadBtn").onclick = ()=>{
+    const downloadUrl = type==='movie'? `https://dl.vidsrc.vip/movie/${id}`:`https://dl.vidsrc.vip/tv/${id}/1/1`;
+    window.open(downloadUrl,"_blank");
   }
 }
 

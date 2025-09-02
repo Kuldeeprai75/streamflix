@@ -3,85 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Streaming Site - Latest Indian Movies & TV Shows</title>
+<title>Streaming Hub</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
 <style>
-body{background:#0e0f14;color:#fff;font-family:Arial,sans-serif;}
-h1,h2{text-align:center;color:#23d5ab;margin-bottom:30px;}
-.section{margin-bottom:50px;}
-.movie-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;}
-.movie-card{background:#151823;border-radius:12px;overflow:hidden;cursor:pointer;transition:.3s;position:relative;}
-.movie-card:hover{transform:scale(1.05);box-shadow:0 0 15px #23d5ab;}
-.movie-card img{width:100%;height:300px;object-fit:cover;}
-.movie-info{padding:10px;text-align:center;}
-.movie-title{font-weight:bold;font-size:16px;margin-bottom:5px;}
-.movie-year{font-size:14px;color:#aaa;}
-.play-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(35,213,171,0.9);padding:10px 15px;border-radius:50px;font-weight:bold;cursor:pointer;display:none;font-size:16px;}
-.movie-card:hover .play-overlay{display:block;}
+body{background:#0e0f14;color:#fff;font-family:sans-serif;margin:0;padding:0;}
+h2{color:#23d5ab;margin:20px 0;}
+.section{margin-bottom:40px;}
+.slider{display:flex;overflow-x:auto;gap:15px;padding:10px 0;scroll-behavior:smooth;}
+.slider::-webkit-scrollbar{display:none;}
+.card{position:relative;flex:0 0 auto;width:150px;border-radius:12px;overflow:hidden;cursor:pointer;transition:0.3s;}
+.card img{width:100%;height:220px;object-fit:cover;}
+.card:hover{transform:scale(1.05);}
+.play-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+background:rgba(35,213,171,0.9);padding:10px 15px;border-radius:50px;font-weight:bold;font-size:16px;display:none;}
+.card:hover .play-overlay{display:block;}
+.badge-lang{position:absolute;top:5px;right:5px;background:#23d5ab;color:#000;padding:2px 6px;font-size:12px;border-radius:5px;font-weight:bold;}
+.card-title{text-align:center;margin-top:5px;font-size:14px;font-weight:bold;}
 </style>
 </head>
 <body>
 
 <div class="container py-4">
+  <h2>Latest Indian Movies</h2>
+  <div id="moviesSlider" class="slider"></div>
 
-  <div class="section">
-    <h1>Latest Indian Movies</h1>
-    <div id="moviesContainer" class="movie-grid"></div>
-  </div>
-
-  <div class="section">
-    <h2>Latest Indian TV Shows</h2>
-    <div id="tvContainer" class="movie-grid"></div>
-  </div>
-
+  <h2>Latest Indian TV Shows</h2>
+  <div id="tvSlider" class="slider"></div>
 </div>
 
 <script>
 const cfg={BASE:"https://api.themoviedb.org/3/",KEY:"fed86956458f19fb45cdd382b6e6de83",IMG:"https://image.tmdb.org/t/p/w500"};
 
-async function fetchLatestIndianMovies(){
-  const res = await fetch(`${cfg.BASE}discover/movie?api_key=${cfg.KEY}&with_original_language=hi&sort_by=release_date.desc&language=en-US`);
+async function fetchMovies(){
+  const res = await fetch(`${cfg.BASE}discover/movie?api_key=${cfg.KEY}&with_original_language=hi&sort_by=release_date.desc`);
   const data = await res.json();
-  const container = document.getElementById("moviesContainer");
-  container.innerHTML="";
+  const slider = document.getElementById("moviesSlider");
   data.results.forEach(movie=>{
-    const poster = movie.poster_path? cfg.IMG+movie.poster_path : "https://via.placeholder.com/300x450?text=No+Image";
-    const card = document.createElement("div");
-    card.className="movie-card";
-    card.innerHTML=`<img src="${poster}" alt="${movie.title}">
-      <div class="play-overlay">▶ Play Trailer</div>
-      <div class="movie-info">
-        <div class="movie-title">${movie.title}</div>
-        <div class="movie-year">${(movie.release_date||"").split("-")[0]}</div>
-      </div>`;
+    const card = document.createElement("div"); card.className="card";
+    card.innerHTML=`
+      <img src="${movie.poster_path?cfg.IMG+movie.poster_path:'https://via.placeholder.com/300x450'}">
+      <div class="play-overlay">▶ Play</div>
+      <div class="badge-lang">Hindi</div>
+      <div class="card-title">${movie.title}</div>`;
     card.onclick=()=>{window.location.href=`movie.html?id=${movie.id}&type=movie`};
-    container.appendChild(card);
+    slider.appendChild(card);
   });
 }
 
-async function fetchLatestIndianTVShows(){
-  const res = await fetch(`${cfg.BASE}discover/tv?api_key=${cfg.KEY}&with_original_language=hi&sort_by=first_air_date.desc&language=en-US`);
+async function fetchTV(){
+  const res = await fetch(`${cfg.BASE}discover/tv?api_key=${cfg.KEY}&with_original_language=hi&sort_by=first_air_date.desc`);
   const data = await res.json();
-  const container = document.getElementById("tvContainer");
-  container.innerHTML="";
+  const slider = document.getElementById("tvSlider");
   data.results.forEach(tv=>{
-    const poster = tv.poster_path? cfg.IMG+tv.poster_path : "https://via.placeholder.com/300x450?text=No+Image";
-    const card = document.createElement("div");
-    card.className="movie-card";
-    card.innerHTML=`<img src="${poster}" alt="${tv.name}">
-      <div class="play-overlay">▶ Play Trailer</div>
-      <div class="movie-info">
-        <div class="movie-title">${tv.name}</div>
-        <div class="movie-year">${(tv.first_air_date||"").split("-")[0]}</div>
-      </div>`;
+    const card = document.createElement("div"); card.className="card";
+    card.innerHTML=`
+      <img src="${tv.poster_path?cfg.IMG+tv.poster_path:'https://via.placeholder.com/300x450'}">
+      <div class="play-overlay">▶ Play</div>
+      <div class="badge-lang">Hindi</div>
+      <div class="card-title">${tv.name}</div>`;
     card.onclick=()=>{window.location.href=`movie.html?id=${tv.id}&type=tv`};
-    container.appendChild(card);
+    slider.appendChild(card);
   });
 }
 
-fetchLatestIndianMovies();
-fetchLatestIndianTVShows();
+fetchMovies(); fetchTV();
 </script>
-
 </body>
 </html>

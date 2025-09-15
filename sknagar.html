@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dailymotion Embed Code Generator (No Preview)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 25px;
+      max-width: 700px;
+      margin: 30px auto;
+      background: #f5f7fa;
+    }
+    .input-group {
+      margin-bottom: 25px;
+      display: flex;
+      gap: 12px;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #0066ff;
+    }
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    button.generate {
+      background: #0066ff;
+      color: white;
+    }
+    button.generate:hover {
+      background: #0055dd;
+    }
+    button.copy-btn {
+      background: #28a745;
+      color: white;
+      margin-top: 10px;
+    }
+    button.copy-btn:hover {
+      background: #218838;
+    }
+    #output {
+      margin-top: 25px;
+      background: #fff;
+      padding: 20px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .success {
+      padding: 12px;
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      border-radius: 6px;
+      margin-top: 15px;
+      display: none;
+    }
+    h2 {
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🎯 Dailymotion Embed Code Generator</h2>
+  <p>Video ID daalein (jaise: <code>x9qlqp4</code>) — Preview player removed as requested.</p>
+
+  <div class="input-group">
+    <input type="text" id="videoId" placeholder="Enter Dailymotion Video ID" value="x9qlqp4" />
+    <button class="generate" onclick="generateCode()">Generate Code</button>
+  </div>
+
+  <div id="output">Click "Generate Code" to see embed code...</div>
+
+  <div class="success" id="successMsg">✅ Embed code copied to clipboard!</div>
+
+  <script>
+    let currentVideoId = "";
+
+    function generateCode() {
+      const videoId = document.getElementById('videoId').value.trim();
+
+      if (!videoId) {
+        alert("❌ Please enter a valid Video ID");
+        return;
+      }
+
+      currentVideoId = videoId;
+
+      // Generate the embed code
+      const embedCode = `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+  <iframe src="https://geo.dailymotion.com/player.html?video=${videoId}"
+    style="width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden; border:none;"
+    allowfullscreen
+    title="Dailymotion Video Player"
+    allow="autoplay; web-share; fullscreen; picture-in-picture">
+  </iframe>
+</div>`;
+
+      // Display embed code with Copy Button
+      const outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = `
+        <button class="copy-btn" onclick="copyCode()">📋 Copy to Clipboard</button>
+        <br><br>
+        ${embedCode.replace(/</g, '<').replace(/>/g, '>')}
+      `;
+    }
+
+    function copyCode() {
+      if (!currentVideoId) {
+        alert("❌ Generate code first!");
+        return;
+      }
+
+      const embedCode = `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+  <iframe src="https://geo.dailymotion.com/player.html?video=${currentVideoId}"
+    style="width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden; border:none;"
+    allowfullscreen
+    title="Dailymotion Video Player"
+    allow="autoplay; web-share; fullscreen; picture-in-picture">
+  </iframe>
+</div>`;
+
+      navigator.clipboard.writeText(embedCode)
+        .then(() => {
+          const msg = document.getElementById('successMsg');
+          msg.style.display = 'block';
+          setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        })
+        .catch(err => {
+          console.error("Failed to copy: ", err);
+          alert("❌ Copy failed. Please select and copy manually.");
+        });
+    }
+
+    // Auto-generate on page load
+    window.onload = generateCode;
+  </script>
+
+</body>
+</html>
